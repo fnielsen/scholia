@@ -26,6 +26,7 @@ Examples
 from __future__ import print_function
 
 import requests
+from scholia.config import config
 
 from six import u
 
@@ -155,9 +156,11 @@ def wb_get_entities(qs):
     headers = {
         'User-Agent': 'Scholia',
     }
-    response_data = requests.get(
-        'https://www.wikidata.org/w/api.php',
-        headers=headers, params=params).json()
+
+    response = requests.get('https://www.wikidata.org/w/api.php',
+                            headers=headers, params=params)
+    response_data = response.json()
+
     if 'entities' in response_data:
         return response_data['entities']
 
@@ -546,7 +549,7 @@ def search(query, limit=10):
     """
     # Query the Wikidata API
     response = requests.get(
-        "https://www.wikidata.org/w/api.php",
+        config.get('servers', 'webservice_url'),
         params={
             'action': 'query',
             'list': 'search',

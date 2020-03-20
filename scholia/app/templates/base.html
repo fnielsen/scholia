@@ -5,6 +5,7 @@
 
 <meta name="robots" content="index, nofollow">
 
+
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jquery.dataTables.min.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/scholia.css') }}">
@@ -17,6 +18,7 @@
 {% block scripts %}
 {{super()}}
 
+<script type="text/javascript" src="{{ url_for('static', filename='scholiaConfig.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.dataTables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='scholia.js') }}"></script>
 
@@ -25,7 +27,7 @@
 <script type="text/javascript">
  if ("{{ q }}" != "") {
 
-     var url = 'https://www.wikidata.org/w/api.php?action=wbgetentities&ids=' +
+     var url = '{{ sparql_endpoint_embed_url }}' + '?action=wbgetentities&ids=' +
 	       '{{ q }}' + 
 	       '&format=json&callback=?';
      
@@ -126,8 +128,8 @@
 
      });
 
-     var endpointUrl = 'https://query.wikidata.org/sparql';
-     var query = `
+    var endpointUrl = '{{ SPARQLEndPointURL }}'
+    var query = `
     SELECT DISTINCT ?aspect 
     WHERE {
     { [] wdt:P50 wd:{{ q }} . BIND("author" AS ?aspect) }
@@ -202,7 +204,7 @@
 		 $( '#wembedder' ).append( html );
 
 		 // Convert Q identifier to labels
-                 $.getJSON("https://www.wikidata.org/w/api.php?callback=?", {
+                 $.getJSON('{{webservice_url}}' + "?callback=?", {
                      action: "wbgetentities",
                      ids: listed_q,
                      language: language,
@@ -225,7 +227,7 @@
 
  $('#searchterm').keyup(function( e ) {
       var q = $('#searchterm').val();
-      $.getJSON("https://www.wikidata.org/w/api.php?callback=?", {
+      $.getJSON('{{ sparql_endpoint_embed_url }}' +"?callback=?", {
           search: q,
           action: "wbsearchentities",
           language: "en",
@@ -243,6 +245,14 @@
         });
       });
     });
+    
+        
+    $(function ($) { // First argument is the jQuery object
+        $('body').on('click', '[data-toggle="modal"]', function(){
+        $($(this).data("target")+' .modal-body').load($(this).data("remote"));
+        });
+    });
+
 
 </script>
 
@@ -356,6 +366,7 @@
 		<ul class="dropdown-menu">
 		    <li role="presentation"><a href="{{ url_for('app.show_about') }}">About</a></li>
 		    <li role="presentation"><a href="{{ url_for('app.show_faq') }}">FAQ</a></li>
+		    <!--li role="presentation"><a href="#" data-toggle="modal" data-target="#emodal" data-remote="/report-error/">FeedBack</a></li-->
 		</ul>
 	    </div>
 	</li>
@@ -399,8 +410,28 @@
     <a href="https://github.com/fnielsen/scholia/issues">Issues</a> GitHub page.
     <hr>
   </div>
-{% endblock %}
 
-<script type="text/javascript">
-    
-</script>
+
+<div class="modal" tabindex="-1" role="dialog" id="emodal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">FeedBack</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Modal body text goes here.</p>
+      </div>
+      <!--div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div-->
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
